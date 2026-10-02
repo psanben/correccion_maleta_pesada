@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de desviación</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .contenedor {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .resultado {
+            background: #f0f3f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .resultado div {
+            margin-bottom: 12px;
+        }
+
+        .valor {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .formula {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <h1>Calculadora de desviación</h1>
+
+    <label for="lectura">
+        Lectura del medidor (lb)
+    </label>
+
+    <input
+        type="number"
+        id="lectura"
+        min="0"
+        step="0.01"
+        value="7500"
+        placeholder="Introduzca las libras"
+    >
+
+    <div class="resultado">
+
+        <div>
+            <strong>Error máximo:</strong>
+        </div>
+
+        <div id="errorLb" class="valor">
+            0,00 lb
+        </div>
+
+        <div id="errorKg" class="valor">
+            0,00 kg
+        </div>
+
+        <div id="porcentaje">
+            Error relativo: 0,000 %
+        </div>
+
+        <div id="formula" class="formula">
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const lectura = document.getElementById("lectura");
+    const errorLb = document.getElementById("errorLb");
+    const errorKg = document.getElementById("errorKg");
+    const porcentaje = document.getElementById("porcentaje");
+    const formula = document.getElementById("formula");
+
+
+    function calcular() {
+
+        let valor = parseFloat(lectura.value);
+
+        // Comprobar que el valor sea válido
+        if (isNaN(valor) || valor < 0) {
+
+            errorLb.textContent = "Introduzca una lectura válida";
+            errorKg.textContent = "";
+            porcentaje.textContent = "";
+            formula.textContent = "";
+
+            return;
+        }
+
+
+        /*
+            Especificaciones del medidor:
+
+            5.000 lb  -> 0,5 % de error
+            10.000 lb -> 0 % de error
+
+            Se utiliza una interpolación lineal.
+        */
+
+        let porcentajeError;
+
+        if (valor <= 5000) {
+
+            porcentajeError = 0.5;
+
+        } else if (valor >= 10000) {
+
+            porcentajeError = 0;
+
+        } else {
+
+            porcentajeError =
+                0.5 * (10000 - valor) / 5000;
+
+        }
+
+
+        // Calcular error en libras
+        const errorEnLb =
+            valor * porcentajeError / 100;
+
+
+        // Conversión de libras a kilogramos
+        const errorEnKg =
+            errorEnLb * 0.45359237;
+
+
+        // Mostrar resultados
+        errorLb.textContent =
+            "+ " + errorEnLb.toLocaleString("es-ES", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + " lb";
+
+
+        errorKg.textContent =
+            "+ " + errorEnKg.toLocaleString("es-ES", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + " kg";
+
+
+        porcentaje.textContent =
+            "Error relativo: " +
+            porcentajeError.toLocaleString("es-ES", {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            }) + " %";
+
+
+        formula.textContent =
+            valor.toLocaleString("es-ES") +
+            " lb × " +
+            porcentajeError.toLocaleString("es-ES", {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            }) +
+            " % = + " +
+            errorEnLb.toLocaleString("es-ES", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) +
+            " lb";
+
+    }
+
+
+    // Calcular automáticamente al cambiar la lectura
+    lectura.addEventListener("input", calcular);
+
+
+    // Cálculo inicial
+    calcular();
+
+</script>
+
+</body>
+</html>
